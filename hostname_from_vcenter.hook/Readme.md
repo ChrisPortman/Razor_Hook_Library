@@ -5,6 +5,9 @@ This hook should be run in response to a node-registered event.  If the node is 
 
 You can then use node.metadata['hostname'] in your task (or alter the common/set_hostname.erb) to set the hostname.
 
+## Setup
+Install the rbvmomi gem
+
 ## Configuration
 The following configurables should be set:
    * vcenter_host: The hostname or IP of the VCenter host
