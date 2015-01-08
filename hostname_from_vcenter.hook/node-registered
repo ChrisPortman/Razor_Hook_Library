@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'rbvmomi'
+require 'json'
+
+begin
+  hookin = JSON.parse(STDIN.read)
+rescue
+  error("Failed to parse the input as JSON")  
+end
+
+@@config = hookin['hook']['configuration']
+@@node   = hookin['node']
+
+def virtual?
+  @@node['facts']['is_virtual'] == 'true' ? true : false
+end
+
+def virtual_type
+  if virtual?
+    @@node['facts']['virtual']
+  else
+    nil
+  end
+end
+
+def uuid
+  @@node['facts']['uuid']
+end
+
+def find_vm(uuid=uuid)
+  begin
+    vim = RbVmomi::VIM.connect host: @@config['vcenter_host'], insecure: true, user: @@config['username'], password: @@config['password']
+  rescue Exception => e
+    error("Could not connect to vCenter: #{e.message}")
+  end
+  vim.serviceInstance.content.rootFolder.findByUuid(uuid)
+end
+
+def error(message)
+  out = {
+    "error" => {
+      "message" => message,
+    }
+  }
+  puts JSON.dump(out)
+  exit 1
+end
+
+if virtual_type and virtual_type == 'vmware'
+  vm   = find_vm || error("Could not find VM in vcenter")
+  fqdn = vm.name
+  fqdn = "#{fqdn}.#{@@config['dns_domain']}" if @@config['dns_domain']
+
+   out = {
+    "node" => {
+      "metadata" => {
+        "update" => {
+          "hostname" => fqdn,
+        },
+      },
+    },
+  }
+
+  puts JSON.dump(out)
+end
+
+exit 0
+

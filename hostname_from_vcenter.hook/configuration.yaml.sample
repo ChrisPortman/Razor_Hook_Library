@@ -1,0 +1,9 @@
+---
+  vcenter_host:
+    description: "The hostname of the vCenter server to connect to."
+  username:
+    description: "The username to use to authenticate with the vCenter server"
+  password:
+    description: "The password to use to authenticate with the vCenter server"
+  dns_domain:
+    description: "The DNS domain name to append to the VM name to create the FQDN"
